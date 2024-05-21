@@ -9,7 +9,7 @@ namespace CamionesAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Administrador")]
+    [Authorize(Roles = "Administrador,Usuario")]
     public class ChoferesController(ChoferRepository repository) : ControllerBase
     {
         #region CRUD
@@ -86,7 +86,7 @@ namespace CamionesAPI.Controllers
         }
         #endregion
         #region Delete
-        [HttpDelete("/Choferes/Eliminar/{id:int}")]
+        [HttpDelete("/Choferes/Eliminar/{Id:int}")]
         public IActionResult Eliminar(int Id)
         {
             var _existente = repository.GetByID(Id);
