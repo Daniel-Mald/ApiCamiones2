@@ -9,11 +9,12 @@ namespace CamionesAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Administrador")]
+   // [Authorize(Roles = "Administrador")]
     public class VehiculosController(UnidadRepository unidadRepos) : ControllerBase
     {
         #region CRUD
         #region Create
+        [Authorize(Roles = "Administrador")]
         [HttpPost("/Vehiculos/Agregar")]
         public IActionResult Agregar(UnidadDTO u)
         {
@@ -78,6 +79,7 @@ namespace CamionesAPI.Controllers
         }
         #endregion
         #region Update
+        [Authorize(Roles = "Administrador")]
         [HttpPut("/Vehiculos/Editar")]
         public IActionResult Editar(UnidadDTO u)
         {
@@ -100,6 +102,7 @@ namespace CamionesAPI.Controllers
         }
         #endregion
         #region Delete
+        [Authorize(Roles = "Administrador")]
         [HttpDelete("/Vehiculos/Eliminar")]
         public IActionResult Eliminar(int id)
         {

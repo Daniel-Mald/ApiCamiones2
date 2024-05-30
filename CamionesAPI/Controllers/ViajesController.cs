@@ -3,13 +3,15 @@ using CamionesAPI.Models.Entities;
 using CamionesAPI.Models.Validators.Viaje;
 using CamionesAPI.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.EntityFrameworkCore.Storage.Json;
 using System.Globalization;
 
 namespace CamionesAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ViajesController(ViajesRepository repository, GenericRepository<Vwvistageneral> viewRepository) : ControllerBase
+    public class ViajesController(ViajesRepository repository, GenericRepository<Vwvistageneral> viewRepository ,GenericRepository<Factura> FacturaRepository) : ControllerBase
     {
         #region CRUD
         #region Create
@@ -21,8 +23,16 @@ namespace CamionesAPI.Controllers
 
             if (result.IsValid)
             {
+                var factura = new Factura()
+                {
+                    IdEstatus = 1,
+                    NumeroFactura = dto.NumeroFactura,
+                    Monto = dto.MontoFactura
+                };
+                FacturaRepository.Add(factura);
                 Viaje viaje = new()
                 {
+                    
                     //Evita problemas al crear objetos en la base de datos
                     Id = 0,
                     Fecha = DateOnly.FromDateTime(DateTime.UtcNow),
@@ -32,7 +42,7 @@ namespace CamionesAPI.Controllers
                                 CalendarWeekRule.FirstFourDayWeek
                                 //Primero dia de la semana
                                 , DayOfWeek.Monday),
-                    IdFactura = dto.EstatusFactura,
+                    IdFactura = factura.Id,
                     Observaciones = dto.Observaciones ?? "",
                     ChoferId = dto.Chofer,
                     IdDisponibilidad = 1,
@@ -45,6 +55,7 @@ namespace CamionesAPI.Controllers
                     GananciaMonetaria = dto.GananciaMonetaria,
                     NumeroViaje = dto.NumeroViaje
                 };
+                repository.Add(viaje);
                 return Ok("Se ah agregado el viaje");
             }
             return BadRequest(result.Errors.Select(x => x.ErrorMessage));
@@ -113,6 +124,7 @@ namespace CamionesAPI.Controllers
                 var anterior = repository.GetByID(dto.Id);
                 if (anterior != null && anterior.IdDisponibilidad == 1)
                 {
+                    var _facturaAnterior = FacturaRepository.GetAll().FirstOrDefault(x=>x.Id == anterior.IdFactura);
                     //La fecha se cambiara automaicamente a la fecha en la que se realizo la edicion
                     anterior.Fecha = DateOnly.FromDateTime(DateTime.UtcNow);
                     //La semana se cambiara automaticamente a la semana en la que se realizo la edicion
@@ -121,7 +133,14 @@ namespace CamionesAPI.Controllers
                                     CalendarWeekRule.FirstFourDayWeek
                                     //Primero dia de la semana
                                     , DayOfWeek.Monday);
-                    anterior.IdFactura = dto.EstatusFactura;
+                    //anterior.IdFactura = dto;
+                    if(_facturaAnterior!= null)
+                    {
+                     _facturaAnterior.NumeroFactura = dto.NumeroFactura;
+                        _facturaAnterior.Monto = dto.MontoFactura;
+                        _facturaAnterior.IdEstatus = dto.EstatusFactura;
+
+                    }
                     anterior.Observaciones = dto.Observaciones ?? "";
                     anterior.ChoferId = dto.Chofer;
                     anterior.IdTipoViaje = dto.TipoViaje;
@@ -132,7 +151,7 @@ namespace CamionesAPI.Controllers
                     anterior.Destino = dto.Destino;
                     anterior.GananciaMonetaria = dto.GananciaMonetaria;
                     anterior.NumeroViaje = dto.NumeroViaje;
-
+                    repository.Update(anterior);
                     return Ok("Se ah editado el viaje");
                 };
                 return NotFound("No se ah encontrado el viaje");
@@ -145,8 +164,10 @@ namespace CamionesAPI.Controllers
         public IActionResult Eliminar(int id)
         {
             var viaje = repository.GetByID(id);
+            
             if (viaje != null && viaje.IdDisponibilidad == 1)
             {
+                //var _facturaAnterior = FacturaRepository.GetByID(viaje.IdFactura);
                 //Eliminacion logica
                 viaje.IdDisponibilidad = 2;
                 repository.Update(viaje);

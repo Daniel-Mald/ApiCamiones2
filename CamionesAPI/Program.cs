@@ -67,6 +67,7 @@ builder.Services.AddTransient<ChoferRepository>();
 builder.Services.AddTransient<UnidadRepository>();
 builder.Services.AddTransient<ViajesRepository>();
 builder.Services.AddTransient<GenericRepository<Vwvistageneral>>();
+builder.Services.AddTransient<GenericRepository<Factura>>();
 builder.Services.AddTransient<GastoRepository>();
 #endregion
 var app = builder.Build();

@@ -10,6 +10,8 @@
         public DateOnly Fecha { get; set; }
         public DateOnly FechaApagar { get; set; }
         public int EstatusFactura { get; set; }
+        public int MontoFactura { get; set; }
+        public string NumeroFactura { get; set; } = null!;
         public int TipoViaje { get; set; }
         public int Unidad { get; set; }
         public int Chofer { get; set; }
